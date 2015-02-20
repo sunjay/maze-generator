@@ -202,7 +202,8 @@ def main():
     path_height = int(tile_height*0.5)
     
     clock = pygame.time.Clock()
-    
+
+    print "Press space to start"
     running = wait_for_space(pygame)
     while running:
         for event in pygame.event.get():
