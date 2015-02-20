@@ -32,10 +32,13 @@ CONNECTABLE_SIDES = {
 class Tile(object):
     
     def __init__(self, **kwargs):
-        self.top_wall = kwargs.get("top_wall", True)
-        self.bottom_wall = kwargs.get("bottom_wall", True)
-        self.left_wall = kwargs.get("left_wall", True)
-        self.right_wall = kwargs.get("right_wall", True)
+        # The tiles adjacently connected to this one
+        self.adjacents = {
+            TOP: kwargs.get("top", True),
+            BOTTOM: kwargs.get("bottom", True),
+            LEFT: kwargs.get("left", True),
+            RIGHT: kwargs.get("right", True),
+        }
         
         self.is_start = kwargs.get("is_start", False)
         self.is_end = kwargs.get("is_end", False)
