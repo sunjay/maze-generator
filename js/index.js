@@ -6,8 +6,12 @@ var maze = new Maze();
 function render() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  ctx.strokeStyle = '#AAA';
-  renderMaze(canvas, maze);
+  var padding = 2;
+  var mazeWidth = canvas.width - padding * 2;
+  var mazeHeight = canvas.height - padding * 2;
+  ctx.lineWidth = 0.5;
+  ctx.strokeStyle = '#CCC';
+  renderMaze(ctx, maze, padding, padding, mazeWidth, mazeHeight);
 }
 
 function loop() {

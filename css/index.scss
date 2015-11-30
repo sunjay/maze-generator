@@ -5,24 +5,26 @@ html, body
 {
   font-family: 'Roboto', sans-serif;
   height: 100%;
-  background: #EEEEEE;
+  background: #B0F0FF;
   padding: 0;
   margin: 0;
+  overflow: hidden;
 }
 
 *, *:before, *:after
 {
-  box-sizing: inherit;
+  box-sizing: border-box;
 }
 
 // When you're too lazy to write real layout code...
 $maze-width: 70%;
+$controls-width: 100% - $maze-width;
 #maze-container
 {
   position: absolute;
   top: 0;
   bottom: 0;
-  left: 0;
+  left: $controls-width;
   width: $maze-width;
 }
 
@@ -31,12 +33,13 @@ $maze-width: 70%;
   position: absolute;
   top: 0;
   bottom: 0;
-  left: $maze-width;
-  width: 100% - $maze-width;
+  left: 0;
+  width: $controls-width;
   padding: 10px;
 
   h1:first-child
   {
+    text-align: center;
     margin-top: 0;
   }
 }

@@ -1,13 +1,11 @@
-function renderMaze(canvas, maze) {
-  var ctx = canvas.getContext("2d");
-
-  var cellWidth = canvas.width / maze.rows();
-  var cellHeight = canvas.height / maze.cols();
+function renderMaze(ctx, maze, x, y, width, height) {
+  var cellWidth = Math.floor(width / maze.rows());
+  var cellHeight = Math.floor(height / maze.cols());
 
   for (var i = 0; i < maze.rows(); i++) {
-    var rowOffset = cellHeight * i;
+    var rowOffset = y + cellHeight * i;
     for (var j = 0; j < maze.cols(); j++) {
-      var colOffset = cellWidth * j;
+      var colOffset = x + cellWidth * j;
 
       var cell = maze.get(i, j);
       renderCell(ctx, cell, colOffset, rowOffset, cellWidth, cellHeight);
