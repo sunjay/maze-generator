@@ -1,6 +1,6 @@
 function Cell() {
   this.openDirections = new Set();
-  this.closedDirections = new Set(Direction.DIRS);
+  this.closedDirections = new Set(Direction.all());
 }
 
 Cell.prototype.open = function(direction) {

@@ -25,7 +25,9 @@ Maze.prototype.cols = function() {
  * Returns undefined if the indexes are out of range
  */
 Maze.prototype.get = function(row, col) {
-  return this.grid[row][col];
+  if (this.grid[row]) {
+    return this.grid[row][col];
+  }
 };
 
 /**

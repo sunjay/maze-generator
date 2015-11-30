@@ -6,7 +6,6 @@ Direction.N = 'north';
 Direction.S = 'south';
 Direction.E = 'east';
 Direction.W = 'west';
-Direction.DIRS = [Direction.N, Direction.S, Direction.E, Direction.W];
 
 Direction.OPPOSITES = {};
 Direction.OPPOSITES[Direction.N] = Direction.S;
@@ -21,6 +20,13 @@ Direction.TRANSLATIONS[Direction.N] = [-1, 0];
 Direction.TRANSLATIONS[Direction.S] = [+1, 0];
 Direction.TRANSLATIONS[Direction.E] = [0, -1];
 Direction.TRANSLATIONS[Direction.W] = [0, +1];
+
+/**
+ * Returns a list of all the directions
+ */
+Direction.all = function() {
+  return [Direction.N, Direction.S, Direction.E, Direction.W];
+};
 
 /**
  * Returns the opposite of the given direction

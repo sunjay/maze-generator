@@ -2,6 +2,7 @@ var canvas = document.getElementById("maze");
 var ctx = canvas.getContext("2d");
 
 var maze = new Maze();
+generatePaths(maze);
 
 function render() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
