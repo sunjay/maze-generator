@@ -1,6 +1,10 @@
 function renderMaze(ctx, maze, x, y, width, height) {
-  var cellWidth = Math.floor(width / maze.rows());
-  var cellHeight = Math.floor(height / maze.cols());
+  var cellWidth = Math.floor(width / maze.cols());
+  var cellHeight = Math.floor(height / maze.rows());
+
+  // need to adjust x and y slightly so centered
+  x += (width - cellWidth * maze.cols())/2;
+  y += (height - cellHeight * maze.rows())/2;
 
   for (var i = 0; i < maze.rows(); i++) {
     var rowOffset = y + cellHeight * i;

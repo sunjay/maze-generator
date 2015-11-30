@@ -6,7 +6,7 @@ var maze = new Maze();
 function render() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  var padding = 2;
+  var padding = 3;
   var mazeWidth = canvas.width - padding * 2;
   var mazeHeight = canvas.height - padding * 2;
   ctx.lineWidth = 0.5;
@@ -28,7 +28,6 @@ function resizeCanvas() {
 
   canvas.width = width;
   canvas.height = height;
-  render();
 }
 resizeCanvas();
 window.addEventListener('resize', resizeCanvas);
