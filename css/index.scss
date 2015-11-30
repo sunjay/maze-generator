@@ -1,0 +1,49 @@
+---
+---
+
+html, body
+{
+  font-family: 'Roboto', sans-serif;
+  height: 100%;
+  background: #EEEEEE;
+  padding: 0;
+  margin: 0;
+}
+
+*, *:before, *:after
+{
+  box-sizing: inherit;
+}
+
+// When you're too lazy to write real layout code...
+$maze-width: 70%;
+#maze-container
+{
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: $maze-width;
+}
+
+#controls
+{
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: $maze-width;
+  width: 100% - $maze-width;
+  padding: 10px;
+
+  h1:first-child
+  {
+    margin-top: 0;
+  }
+}
+
+canvas#maze
+{
+  background: white;
+  width: 100%;
+  height: 100%;
+}
