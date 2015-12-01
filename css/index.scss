@@ -5,7 +5,6 @@ html, body
 {
   font-family: 'Roboto', sans-serif;
   height: 100%;
-  background: #B0F0FF;
   padding: 0;
   margin: 0;
   overflow: hidden;
@@ -36,6 +35,7 @@ $controls-width: 100% - $maze-width;
   left: 0;
   width: $controls-width;
   padding: 10px;
+  box-shadow: inset 0 0 10px rgba(101, 101, 101, 0.35);
 
   h1:first-child
   {
