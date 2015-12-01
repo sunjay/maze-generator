@@ -53,7 +53,7 @@ function generatePaths(maze, minPathLength) {
       searchAdjacents = unvisitedAdjacents;
     }
 
-    var index = Math.floor((searchAdjacents.length)*Math.random());
+    var index = Math.floor(searchAdjacents.length * Math.random());
     var next = searchAdjacents[index];
     maze.openBetween(cell, next);
 

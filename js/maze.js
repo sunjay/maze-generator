@@ -70,7 +70,7 @@ Maze.prototype.randomEdge = function(other) {
 
 Maze.prototype._randomEdge = function() {
   var edges = this.edgeCells();
-  return edges[Math.floor((edges.length-1) * Math.random())];
+  return edges[Math.floor(edges.length * Math.random())];
 };
 
 /**
