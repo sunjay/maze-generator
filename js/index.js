@@ -10,8 +10,8 @@ function render() {
   var padding = 3;
   var mazeWidth = canvas.width - padding * 2;
   var mazeHeight = canvas.height - padding * 2;
-  ctx.lineWidth = 0.5;
-  ctx.strokeStyle = '#CCC';
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = '#444';
   renderMaze(ctx, maze, padding, padding, mazeWidth, mazeHeight);
 }
 
