@@ -18,6 +18,12 @@ function renderMaze(ctx, maze, x, y, width, height) {
 }
 
 function renderCell(ctx, cell, x, y, width, height) {
+  if (cell.isStart()) {
+    renderSquare(ctx, x, y, width, height, "lightgreen");
+  }
+  if (cell.isFinish()) {
+    renderSquare(ctx, x, y, width, height, "red");
+  }
   if (cell.isClosed(Direction.N)) {
     renderLine(ctx, x, y, x + width, y);
   }
@@ -37,4 +43,12 @@ function renderLine(ctx, x, y, x2, y2) {
   ctx.moveTo(x, y);
   ctx.lineTo(x2, y2);
   ctx.stroke();
+}
+
+function renderSquare(ctx, x, y, width, height, style) {
+  var fillStyle = ctx.fillStyle;
+
+  ctx.fillStyle = style;
+  ctx.fillRect(x, y, width, height);
+  ctx.fillStyle = fillStyle;
 }
