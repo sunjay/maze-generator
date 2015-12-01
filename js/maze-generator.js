@@ -3,14 +3,64 @@
  * 
  * Returns a promise to help determine when complete
  */
-function generatePaths(maze) {
-  var directions = Direction.all();
-  return asyncFor(0, maze.rows(), 1, function(row) {
-    return asyncFor(0, maze.cols(), 1, function(col) {
-      var direction = directions[Math.floor(Math.random() * directions.length)];
+function generatePaths(maze, minPathLength) {
+  minPathLength = minPathLength || Math.floor(Math.sqrt(maze.rows()*maze.cols()));
+  var start = maze.randomEdge().setStart();
 
-      maze.openWall(row, col, direction);
+  var open = [start];
+  var closed = new Set();
+  
+  var pathLength = 0;
+  var reachedEnd = false;
+  return asyncLoop(function(_, finish) {
+    if (!open.length) {
+      return finish();
+    }
+    
+    if (!reachedEnd) {
+      pathLength++;
+    }
+
+    var cell = open.splice(0, 1)[0];
+    closed.add(cell.id);
+
+    // Ensure that the finish is not in the same row or column so the
+    // puzzle isn't too easy
+    if (!reachedEnd && !cell.isStart() && maze.isEdge(cell)
+        && start.row !== cell.row && start.col !== cell.col
+        && pathLength >= minPathLength) {
+      cell.setFinish();
+      reachedEnd = true;
+      return;
+    }
+
+    var adjacents = maze.adjacents(cell);
+    var unvisitedAdjacents = adjacents.filter(function(adj) {
+      return !closed.has(adj.id);
     });
+
+    // Allow the path to continue even if there are no more unvisited
+    // adjacents until we reach the end
+    var searchAdjacents;
+    if (!unvisitedAdjacents.length) {
+      if (reachedEnd) {
+        // no need to continue searching
+        return;
+      }
+      searchAdjacents = Array.from(adjacents);
+    }
+    else {
+      searchAdjacents = unvisitedAdjacents;
+    }
+
+    var index = Math.floor((searchAdjacents.length - 1)*Math.random());
+    var next = searchAdjacents[index];
+    maze.openBetween(cell, next);
+
+    open.unshift(next);
+    Array.prototype.push.apply(open, searchAdjacents.filter(function(adj) {
+      return adj !== next;
+    }));
   });
 }
 
