@@ -97,25 +97,39 @@ function asyncFor(start, end, step, callback, delay) {
  * value of each successive callback
  * If the return value is a promise, that promise will be awaited
  * before continuing in the loop
+ *
+ * The returned promise can be aborted using its abort() method
+ * This ends the loop at the next iteration (similar to while(!done))
  */
 function asyncLoop(callback, value, delay) {
-  var done = false;
-  var finish = function() {done = true;};
+  // Secret paramter saves from having to define a whole new function for
+  // this extra argument
+  var status = arguments[3] || {
+    done: false,
+    finish: function() {
+      this.done = true;
+    }
+  };
 
-  return new Promise(function(resolve, reject) {
+  var promise = new Promise(function(resolve, reject) {
     setTimeout(function() {
-      value = callback(value, finish);
+      value = callback(value, status.finish.bind(status));
       if (!(value instanceof Promise)) {
         value = Promise.resolve(value);
       }
       value.then(function(nextValue) {
-        if (done) {
+        if (status.done) {
           resolve();
         }
         else {
-          resolve(asyncLoop(callback, nextValue));
+          resolve(asyncLoop(callback, nextValue, delay, status));
         }
       });
     }, delay || 0);
   });
+  promise.abort = function() {
+    status.finish();
+  };
+
+  return promise;
 }

@@ -1,6 +1,6 @@
 function Maze(rows, columns) {
-  rows = rows || 50;
-  columns = columns || 50;
+  rows = rows || 30;
+  columns = columns || 30;
 
   this.grid = [];
   for (var i = 0; i < rows; i++) {

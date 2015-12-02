@@ -2,7 +2,18 @@ var canvas = document.getElementById("maze");
 var ctx = canvas.getContext("2d");
 
 var maze = new Maze();
-generatePaths(maze);
+var pathsPromise = generatePaths(maze);
+
+function generate() {
+  if (pathsPromise) {
+    pathsPromise.abort();
+  }
+
+  var size = document.getElementById('size').value;
+  maze = new Maze(size, size);
+  pathsPromise = generatePaths(maze);
+}
+document.getElementById('generate').addEventListener('click', generate);
 
 function render() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
