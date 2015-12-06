@@ -6,6 +6,7 @@ function renderMaze(ctx, maze, x, y, width, height) {
   x += (width - cellWidth * maze.cols())/2;
   y += (height - cellHeight * maze.rows())/2;
 
+  ctx.beginPath();
   for (var i = 0; i < maze.rows(); i++) {
     var rowOffset = y + cellHeight * i;
     for (var j = 0; j < maze.cols(); j++) {
@@ -15,6 +16,7 @@ function renderMaze(ctx, maze, x, y, width, height) {
       renderCell(ctx, cell, colOffset, rowOffset, cellWidth, cellHeight);
     }
   }
+  ctx.stroke();
 }
 
 function renderCell(ctx, cell, x, y, width, height) {
@@ -39,10 +41,8 @@ function renderCell(ctx, cell, x, y, width, height) {
 }
 
 function renderLine(ctx, x, y, x2, y2) {
-  ctx.beginPath();
   ctx.moveTo(x, y);
   ctx.lineTo(x2, y2);
-  ctx.stroke();
 }
 
 function renderSquare(ctx, x, y, width, height, style) {
