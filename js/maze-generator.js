@@ -3,35 +3,41 @@
  * 
  * Returns a promise to help determine when complete
  */
-function generatePaths(maze, minPathLength) {
-  minPathLength = minPathLength || Math.floor(Math.sqrt(maze.rows()*maze.cols()));
+function generatePaths(maze) {
+  var delay = 500/Math.max(maze.rows(), maze.cols());
+
   var start = maze.randomEdge().setStart();
 
-  var open = [start];
   var closed = new Set();
-  
-  var pathLength = 0;
-  var reachedEnd = false;
+  return generateSolution(maze, start, closed, delay).then(function() {
+    return generateDecoys(maze, start, closed, delay);
+  });
+}
+
+function generateSolution(maze, start, closed, delay) {
+  var open = [start];
+  var lastVisited = null;
+
   return asyncLoop(function(_, finish) {
     if (!open.length) {
-      return finish();
+      throw new Error("Ran out of cells before finding a solution");
     }
-    
-    if (!reachedEnd) {
-      pathLength++;
+    var cell = open.splice(0, 1)[0].markCurrent();
+    if (lastVisited) {
+      lastVisited.removeMark();
     }
+    lastVisited = cell;
 
-    var cell = open.splice(0, 1)[0];
+    if (closed.has(cell.id)) {
+      return;
+    }
     closed.add(cell.id);
 
-    // Ensure that the finish is not in the same row or column so the
-    // puzzle isn't too easy
-    if (!reachedEnd && !cell.isStart() && maze.isEdge(cell)
-        && start.row !== cell.row && start.col !== cell.col
-        && pathLength >= minPathLength) {
+    if (!cell.isStart() && maze.isEdge(cell)
+        && start.row !== cell.row && start.col !== cell.col) {
       cell.setFinish();
-      reachedEnd = true;
-      return;
+      cell.removeMark();
+      return finish();
     }
 
     var adjacents = maze.adjacents(cell);
@@ -39,29 +45,153 @@ function generatePaths(maze, minPathLength) {
       return !closed.has(adj.id);
     });
 
-    // Allow the path to continue even if there are no more unvisited
-    // adjacents until we reach the end
-    var searchAdjacents;
-    if (!unvisitedAdjacents.length) {
-      if (reachedEnd) {
-        // no need to continue searching
-        return;
-      }
-      searchAdjacents = Array.from(adjacents);
+    var next;
+    if (unvisitedAdjacents.length) {
+      next = randomArrayItem(unvisitedAdjacents);
+      maze.openBetween(cell, next);
     }
     else {
-      searchAdjacents = unvisitedAdjacents;
+      next = backtrackToUnvisited(maze, cell, closed);
     }
-
-    var index = Math.floor(searchAdjacents.length * Math.random());
-    var next = searchAdjacents[index];
-    maze.openBetween(cell, next);
-
     open.unshift(next);
-    Array.prototype.push.apply(open, searchAdjacents.filter(function(adj) {
+    Array.prototype.push.apply(open, unvisitedAdjacents.filter(function(adj) {
       return adj !== next;
     }));
-  });
+  }, null, delay);
+}
+
+function backtrackToUnvisited(maze, startCell, closed) {
+  var current = startCell;
+  var backwards = null;
+  while (current) {
+    var openDirections = Array.from(current.openDirections);
+    var openAdjacents = [];
+    for (var i = 0; i < openDirections.length; i++) {
+      var direction = openDirections[i];
+      if (openDirections.length > 1 && direction === backwards) {
+        continue;
+      }
+      var adj = maze.adjacentTo(current, direction);
+      if (!adj) {
+        continue;
+      }
+      openAdjacents.push(adj);
+    }
+
+    var next = randomArrayItem(openAdjacents);
+    backwards = next.directionTo(current);
+
+    var adjacents = maze.adjacents(next);
+    var unvisitedAdjacents = adjacents.filter(function(adj) {
+      return !closed.has(adj.id);
+    });
+    if (unvisitedAdjacents.length) {
+      var adj = randomArrayItem(unvisitedAdjacents);
+      maze.openBetween(next, adj);
+      return adj;
+    }
+
+    current = next;
+  }
+}
+
+// decoys are paths other than the solution
+function generateDecoys(maze, startCell, closed, delay) {
+  var open = unvistedFromPath(maze, startCell, closed);
+
+  return asyncLoop(function(_, finish) {
+    if (!open.length) {
+      return finish();
+    }
+
+    var current = open.splice(0, 1)[0];
+    if (closed.has(current.id)) {
+      return;
+    }
+
+    // Create a connection to the existing path
+    var closedAdjacents = maze.adjacents(current).filter(function(adj) {
+      return closed.has(adj.id);
+    });
+    var adj = randomArrayItem(closedAdjacents);
+    maze.openBetween(current, adj);
+
+    return generateBoundedPath(maze, current, closed, delay);
+  }, null, delay);
+}
+
+function generateBoundedPath(maze, start, closed, delay) {
+  var open = [start];
+  var lastMarked = null;
+  return asyncLoop(function(_, finish) {
+    if (!open.length) {
+      if (lastMarked) lastMarked.removeMark();
+      return finish();
+    }
+
+    var current = open.splice(0, 1)[0].markCurrent();
+    if (lastMarked) lastMarked.removeMark();
+    lastMarked = current;
+
+    if (closed.has(current.id)) {
+      return;
+    }
+    closed.add(current.id);
+
+    var adjacents = maze.adjacents(current);
+    var unvisitedAdjacents = adjacents.filter(function(adj) {
+      return !closed.has(adj.id);
+    });
+    console.log(unvisitedAdjacents);
+    if (unvisitedAdjacents.length) {
+      var next = randomArrayItem(unvisitedAdjacents);
+      maze.openBetween(current, next);
+
+      open.unshift(next);
+      Array.prototype.push.apply(open, unvisitedAdjacents.filter(function(adj) {
+        return adj !== next;
+      }));
+    }
+  }, null, delay);
+}
+
+// does a search and returns all the unvisited adjacents
+function unvistedFromPath(maze, startCell, closed) {
+  var open = [startCell];
+  var seen = new Set();
+
+  var unvisitedCells = [];
+  var unvisited = new Set();
+
+  while (open.length) {
+    var current = open.splice(0, 1)[0];
+    if (seen.has(current.id)) {
+      continue;
+    }
+    seen.add(current.id);
+    var adjacents = maze.adjacents(current);
+
+    for (var i = 0; i < adjacents.length; i++) {
+      var adj = adjacents[i];
+      if (seen.has(adj)) {
+        continue;
+      }
+      if (closed.has(adj.id)) {
+        open.push(adj);
+      }
+      else if (!unvisited.has(adj.id)) {
+        unvisitedCells.push(adj);
+        unvisited.add(adj.id);
+      }
+    }
+  }
+
+  return unvisitedCells;
+}
+
+function randomArrayItem(array) {
+  var index = Math.floor(array.length * Math.random());
+  return array[index];
 }
 
 /**
@@ -127,9 +257,22 @@ function asyncLoop(callback, value, delay) {
       });
     }, delay || 0);
   });
-  promise.abort = function() {
-    status.finish();
-  };
 
-  return promise;
+  return modifiedPromise(promise, function() {
+    status.finish();
+  });
+}
+
+function modifiedPromise(promise, abort) {
+  return {
+    abort: abort,
+    then: function() {
+      promise = promise.then.apply(promise, arguments);
+      return modifiedPromise(promise, abort);
+    },
+    catch: function() {
+      promise = promise.catch.apply(promise, arguments);
+      return modifiedPromise(promise, abort);
+    }
+  };
 }

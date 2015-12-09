@@ -20,6 +20,9 @@ function renderMaze(ctx, maze, x, y, width, height) {
 }
 
 function renderCell(ctx, cell, x, y, width, height) {
+  if (cell.isMarkedCurrent()) {
+    renderSquare(ctx, x, y, width, height, "cyan");
+  }
   if (cell.isStart()) {
     renderSquare(ctx, x, y, width, height, "lightgreen");
   }
@@ -52,3 +55,4 @@ function renderSquare(ctx, x, y, width, height, style) {
   ctx.fillRect(x, y, width, height);
   ctx.fillStyle = fillStyle;
 }
+
