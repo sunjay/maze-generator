@@ -1,6 +1,6 @@
 var SOLVING_ALGORITHMS = {
   // these map to values in index.html
-  "depth-first": solveMazeDepthFirst
+  "breadth-first": solveMazeBreadthFirst
 };
 
 function solveMaze(maze, algorithm) {
@@ -9,7 +9,7 @@ function solveMaze(maze, algorithm) {
   return SOLVING_ALGORITHMS[algorithm](maze, delay);
 }
 
-function solveMazeDepthFirst(maze, delay) {
+function solveMazeBreadthFirst(maze, delay) {
   var start = maze.findStart();
   var open = [start];
   var visited = new Set();
