@@ -12,6 +12,8 @@ function generatePaths(maze, minPathLength) {
   
   var pathLength = 0;
   var reachedEnd = false;
+  var lastVisited = null;
+  var backwards = null;
   return asyncLoop(function(_, finish) {
     if (!open.length) {
       return finish();
@@ -21,7 +23,16 @@ function generatePaths(maze, minPathLength) {
       pathLength++;
     }
 
-    var cell = open.splice(0, 1)[0];
+    var cell = open.splice(0, 1)[0].markCurrent();
+    console.log("visiting", cell);
+    if (lastVisited) {
+      lastVisited.removeMark();
+      if (cell.isAdjacent(lastVisited)) {
+        backwards = cell.directionTo(lastVisited);
+      }
+    }
+
+    lastVisited = cell;
     closed.add(cell.id);
 
     // Ensure that the finish is not in the same row or column so the
@@ -39,28 +50,44 @@ function generatePaths(maze, minPathLength) {
       return !closed.has(adj.id);
     });
 
-    // Allow the path to continue even if there are no more unvisited
-    // adjacents until we reach the end
-    var searchAdjacents;
+    var next;
     if (!unvisitedAdjacents.length) {
       if (reachedEnd) {
         // no need to continue searching
+        console.log(3);
         return;
       }
-      searchAdjacents = Array.from(adjacents);
+
+      // in order to reach some kind of end, backtrack
+      pathLength--;
+      var openDirections = Array.from(cell.openDirections.values());
+      if (openDirections.length > 1) {
+        openDirections = openDirections.filter(function(d) {
+          return d !== backwards;
+        });
+      }
+
+      var index = Math.floor(openDirections.length * Math.random());
+      var direction = openDirections[index];
+      next = maze.adjacentTo(cell, direction);
+      console.log(1);
+      console.log(backwards);
     }
     else {
-      searchAdjacents = unvisitedAdjacents;
-    }
+      var index = Math.floor(unvisitedAdjacents.length * Math.random());
+      next = unvisitedAdjacents[index];
+      maze.openBetween(cell, next);
 
-    var index = Math.floor(searchAdjacents.length * Math.random());
-    var next = searchAdjacents[index];
-    maze.openBetween(cell, next);
+      Array.prototype.push.apply(open, unvisitedAdjacents.filter(function(adj) {
+        return adj !== next;
+      }));
+      console.log(2);
+    }
+    console.log("next", next);
 
     open.unshift(next);
-    Array.prototype.push.apply(open, searchAdjacents.filter(function(adj) {
-      return adj !== next;
-    }));
+  }).then(function() {
+    lastVisited.removeMark();
   });
 }
 

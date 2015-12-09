@@ -4,15 +4,20 @@ function Cell(row, col) {
 
   this.id = Cell._idx++;
   this.type = Cell.NORMAL;
+  this.mark = null;
 
   this.openDirections = new Set();
   this.closedDirections = new Set(Direction.all());
 }
 Cell._idx = 1;
 
+// cell types
 Cell.NORMAL = "normal";
 Cell.START = "start";
 Cell.FINISH = "finish";
+
+// cell markers
+Cell.CURRENT = "current";
 
 Cell.prototype.isNormal = function() {
   return this.type === Cell.NORMAL;
@@ -59,6 +64,28 @@ Cell.prototype.isOpen = function(direction) {
 
 Cell.prototype.isClosed = function(direction) {
   return this.closedDirections.has(direction);
+};
+
+Cell.prototype.removeMark = function() {
+  this.mark = null;
+  return this;
+};
+
+Cell.prototype.markCurrent = function() {
+  this.mark = Cell.CURRENT;
+  return this;
+};
+
+Cell.prototype.isMarkedCurrent = function() {
+  return this.mark === Cell.CURRENT;
+};
+
+/**
+ * Returns true if the cell is adjacent to the other given cell
+ */
+Cell.prototype.isAdjacent = function(other) {
+  return Math.abs(this.row - other.row) === 1
+      && Math.abs(this.col - other.col) === 1;
 };
 
 /**
