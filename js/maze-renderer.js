@@ -23,6 +23,12 @@ function renderCell(ctx, cell, x, y, width, height) {
   if (cell.isMarkedCurrent()) {
     renderSquare(ctx, x, y, width, height, "cyan");
   }
+  else if (cell.isMarkedVisited()) {
+    renderSquare(ctx, x, y, width, height, "white");
+  }
+  else {
+    renderSquare(ctx, x, y, width, height, ctx.strokeStyle);
+  }
   if (cell.isStart()) {
     renderSquare(ctx, x, y, width, height, "lightgreen");
   }
