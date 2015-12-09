@@ -22,7 +22,7 @@ function generateSolution(maze, start, visited, delay) {
     if (!open.length) {
       throw new Error("Ran out of cells before finding a solution");
     }
-    var cell = open.splice(0, 1)[0].markVisited().markCurrent();
+    var cell = open.splice(0, 1)[0].markGenerated().markCurrent();
     if (lastVisited) {
       lastVisited.unmarkCurrent();
     }
@@ -136,7 +136,7 @@ function generateBoundedPath(maze, start, visited, delay) {
       return finish();
     }
 
-    var current = open.splice(0, 1)[0].markVisited().markCurrent();
+    var current = open.splice(0, 1)[0].markGenerated().markCurrent();
     if (lastMarked) lastMarked.unmarkCurrent();
     lastMarked = current;
 

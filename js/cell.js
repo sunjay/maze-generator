@@ -19,6 +19,7 @@ Cell.FINISH = "finish";
 // cell markers
 Cell.CURRENT = "current";
 Cell.VISITED = "visited";
+Cell.GENERATED = "generated";
 
 Cell.prototype.isNormal = function() {
   return this.type === Cell.NORMAL;
@@ -82,6 +83,11 @@ Cell.prototype.markVisited = function() {
   return this;
 };
 
+Cell.prototype.markGenerated = function() {
+  this.marks.add(Cell.GENERATED);
+  return this;
+};
+
 Cell.prototype.unmarkCurrent = function() {
   this.marks.delete(Cell.CURRENT);
   return this;
@@ -92,12 +98,21 @@ Cell.prototype.unmarkVisited = function() {
   return this;
 };
 
+Cell.prototype.unmarkGenerated = function() {
+  this.marks.delete(Cell.GENERATED);
+  return this;
+};
+
 Cell.prototype.isMarkedCurrent = function() {
   return this.marks.has(Cell.CURRENT);
 };
 
 Cell.prototype.isMarkedVisited = function() {
   return this.marks.has(Cell.VISITED);
+};
+
+Cell.prototype.isMarkedGenerated = function() {
+  return this.marks.has(Cell.GENERATED);
 };
 
 /**

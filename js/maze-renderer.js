@@ -23,7 +23,7 @@ function renderCell(ctx, cell, x, y, width, height) {
   if (cell.isMarkedCurrent()) {
     renderSquare(ctx, x, y, width, height, "cyan");
   }
-  else if (cell.isMarkedVisited()) {
+  else if (cell.isMarkedGenerated()) {
     renderSquare(ctx, x, y, width, height, "white");
   }
   else {
