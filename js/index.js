@@ -78,7 +78,8 @@ function render() {
   renderMaze(mazeCtx, maze, x, y, mazeWidth, mazeHeight);
 
   solutionCtx.clearRect(0, 0, solutionCanvas.width, solutionCanvas.height);
-  solutionCtx.fillStyle = 'blue';
+  solutionCtx.lineWidth = 2;
+  solutionCtx.strokeStyle = 'blue';
   renderVisited(solutionCtx, maze, x, y, mazeWidth, mazeHeight);
 }
 

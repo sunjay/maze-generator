@@ -27,17 +27,39 @@ function renderVisited(ctx, maze, x, y, width, height) {
   x += (width - cellWidth * maze.cols())/2;
   y += (height - cellHeight * maze.rows())/2;
 
+  ctx.beginPath();
   for (var i = 0; i < maze.rows(); i++) {
-    var rowOffset = y + cellHeight * (i + 0.5);
+    var rowOffset = y + cellHeight * i;
     for (var j = 0; j < maze.cols(); j++) {
-      var colOffset = x + cellWidth * (j + 0.5);
+      var colOffset = x + cellWidth * j;
 
       var cell = maze.get(i, j);
       if (cell.isMarkedVisited()) {
-        renderCircle(ctx, colOffset, rowOffset, Math.min(cellWidth/4, cellHeight/4));
+        renderCellVisitedConnections(ctx, maze, cell, colOffset, rowOffset, cellWidth, cellHeight);
       }
     }
   }
+  ctx.stroke();
+}
+
+function renderCellVisitedConnections(ctx, maze, cell, x, y, width, height) {
+  var centerX = x + width/2;
+  var centerY = y + height/2;
+  maze.openAdjacents(cell).forEach(function(adj) {
+    if (adj.isMarkedVisited()) {
+      var direction = cell.directionTo(adj);
+      var offset = Direction.shift(0, 0, direction);
+      var rowOffset = offset[0], colOffset = offset[1];
+      renderLine(ctx,
+        // from center to...
+        centerX,
+        centerY,
+        // corresponding side
+        centerX + width/2 * colOffset,
+        centerY + height/2 * rowOffset
+      );
+    }
+  });
 }
 
 function renderCell(ctx, cell, x, y, width, height) {
