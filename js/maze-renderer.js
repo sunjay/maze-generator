@@ -19,6 +19,27 @@ function renderMaze(ctx, maze, x, y, width, height) {
   ctx.stroke();
 }
 
+function renderVisited(ctx, maze, x, y, width, height) {
+  var cellWidth = Math.floor(width / maze.cols());
+  var cellHeight = Math.floor(height / maze.rows());
+
+  // need to adjust x and y slightly so centered
+  x += (width - cellWidth * maze.cols())/2;
+  y += (height - cellHeight * maze.rows())/2;
+
+  for (var i = 0; i < maze.rows(); i++) {
+    var rowOffset = y + cellHeight * (i + 0.5);
+    for (var j = 0; j < maze.cols(); j++) {
+      var colOffset = x + cellWidth * (j + 0.5);
+
+      var cell = maze.get(i, j);
+      if (cell.isMarkedVisited()) {
+        renderCircle(ctx, colOffset, rowOffset, Math.min(cellWidth/4, cellHeight/4));
+      }
+    }
+  }
+}
+
 function renderCell(ctx, cell, x, y, width, height) {
   if (cell.isMarkedCurrent()) {
     renderSquare(ctx, x, y, width, height, "cyan");
@@ -52,6 +73,12 @@ function renderCell(ctx, cell, x, y, width, height) {
 function renderLine(ctx, x, y, x2, y2) {
   ctx.moveTo(x, y);
   ctx.lineTo(x2, y2);
+}
+
+function renderCircle(ctx, x, y, radius) {
+  ctx.beginPath();
+  ctx.arc(x, y, radius, 0, 2*Math.PI);
+  ctx.fill();
 }
 
 function renderSquare(ctx, x, y, width, height, style) {
