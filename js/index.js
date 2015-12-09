@@ -22,8 +22,19 @@ function solve() {
   }
 
   setSolveStatus("Waiting for generator to finish...");
-  solverPromise = pathsPromise.then(function() {
-    setSolveStatus("Solving...");
+
+  var aborted = false;
+  solverPromise = modifiedPromise(new Promise(function(resolve, reject) {
+    pathsPromise.then(function() {
+      if (aborted) {
+        return;
+      }
+      setSolveStatus("Solving...");
+      var algorithm = document.getElementById('solver-algorithm').value;
+      resolve(solveMaze(maze, algorithm));
+    }).catch(reject);
+  }), function() {
+    aborted = true;
   }).then(function() {
     setSolveStatus("Solved.");
     solverPromise = null;
