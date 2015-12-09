@@ -22,9 +22,9 @@ function generateSolution(maze, start, visited, delay) {
     if (!open.length) {
       throw new Error("Ran out of cells before finding a solution");
     }
-    var cell = open.splice(0, 1)[0].markCurrent();
+    var cell = open.splice(0, 1)[0].markVisited().markCurrent();
     if (lastVisited) {
-      lastVisited.markVisited();
+      lastVisited.unmarkCurrent();
     }
     lastVisited = cell;
 
@@ -36,7 +36,7 @@ function generateSolution(maze, start, visited, delay) {
     if (!cell.isStart() && maze.isEdge(cell)
         && start.row !== cell.row && start.col !== cell.col) {
       cell.setFinish();
-      cell.markVisited();
+      cell.unmarkCurrent();
       return finish();
     }
 
@@ -132,12 +132,12 @@ function generateBoundedPath(maze, start, visited, delay) {
   var lastMarked = null;
   return asyncLoop(function(_, finish) {
     if (!open.length) {
-      if (lastMarked) lastMarked.markVisited();
+      if (lastMarked) lastMarked.unmarkCurrent();
       return finish();
     }
 
-    var current = open.splice(0, 1)[0].markCurrent();
-    if (lastMarked) lastMarked.markVisited();
+    var current = open.splice(0, 1)[0].markVisited().markCurrent();
+    if (lastMarked) lastMarked.unmarkCurrent();
     lastMarked = current;
 
     if (visited.has(current.id)) {
@@ -159,7 +159,7 @@ function generateBoundedPath(maze, start, visited, delay) {
       }));
     }
     else {
-      lastMarked.markVisited();
+      lastMarked.unmarkCurrent();
       return finish();
     }
   }, null, delay);
