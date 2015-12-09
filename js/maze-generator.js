@@ -16,6 +16,7 @@ function generatePaths(maze, minPathLength) {
   var backwards = null;
   return asyncLoop(function(_, finish) {
     if (!open.length) {
+      lastVisited.removeMark();
       return finish();
     }
     
@@ -86,9 +87,7 @@ function generatePaths(maze, minPathLength) {
     console.log("next", next);
 
     open.unshift(next);
-  }).then(function() {
-    lastVisited.removeMark();
-  });
+  }, null, 1500/Math.max(maze.rows(), maze.cols()));
 }
 
 /**
