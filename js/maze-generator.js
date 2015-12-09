@@ -8,13 +8,13 @@ function generatePaths(maze) {
 
   var start = maze.randomEdge().setStart();
 
-  var closed = new Set();
-  return generateSolution(maze, start, closed, delay).then(function() {
-    return generateDecoys(maze, start, closed, delay);
+  var visited = new Set();
+  return generateSolution(maze, start, visited, delay).then(function() {
+    return generateDecoys(maze, start, visited, delay);
   });
 }
 
-function generateSolution(maze, start, closed, delay) {
+function generateSolution(maze, start, visited, delay) {
   var open = [start];
   var lastVisited = null;
 
@@ -28,10 +28,10 @@ function generateSolution(maze, start, closed, delay) {
     }
     lastVisited = cell;
 
-    if (closed.has(cell.id)) {
+    if (visited.has(cell.id)) {
       return;
     }
-    closed.add(cell.id);
+    visited.add(cell.id);
 
     if (!cell.isStart() && maze.isEdge(cell)
         && start.row !== cell.row && start.col !== cell.col) {
@@ -42,7 +42,7 @@ function generateSolution(maze, start, closed, delay) {
 
     var adjacents = maze.adjacents(cell);
     var unvisitedAdjacents = adjacents.filter(function(adj) {
-      return !closed.has(adj.id);
+      return !visited.has(adj.id);
     });
 
     var next;
@@ -51,7 +51,7 @@ function generateSolution(maze, start, closed, delay) {
       maze.openBetween(cell, next);
     }
     else {
-      next = backtrackToUnvisited(maze, cell, closed);
+      next = backtrackToUnvisited(maze, cell, visited);
     }
     open.unshift(next);
     Array.prototype.push.apply(open, unvisitedAdjacents.filter(function(adj) {
@@ -60,7 +60,7 @@ function generateSolution(maze, start, closed, delay) {
   }, null, delay);
 }
 
-function backtrackToUnvisited(maze, startCell, closed) {
+function backtrackToUnvisited(maze, startCell, visited) {
   var current = startCell;
   var backwards = null;
   while (current) {
@@ -83,7 +83,7 @@ function backtrackToUnvisited(maze, startCell, closed) {
 
     var adjacents = maze.adjacents(next);
     var unvisitedAdjacents = adjacents.filter(function(adj) {
-      return !closed.has(adj.id);
+      return !visited.has(adj.id);
     });
     if (unvisitedAdjacents.length) {
       var adj = randomArrayItem(unvisitedAdjacents);
@@ -96,38 +96,38 @@ function backtrackToUnvisited(maze, startCell, closed) {
 }
 
 // decoys are paths other than the solution
-function generateDecoys(maze, startCell, closed, delay) {
-  var open = unvisitedFromPath(maze, startCell, closed);
+function generateDecoys(maze, startCell, visited, delay) {
+  var open = unvisitedFromPath(maze, startCell, visited);
 
   return asyncLoop(function(_, finish) {
     if (!open.length) {
-      open = unvisitedFromPath(maze, startCell, closed);
+      open = unvisitedFromPath(maze, startCell, visited);
       if (!open.length) {
         return finish();
       }
     }
 
     var current = open.splice(0, 1)[0];
-    if (closed.has(current.id)) {
+    if (visited.has(current.id)) {
       return;
     }
 
     // Create a connection to the existing path
-    connectToExistingPath(maze, current, closed);
+    connectToExistingPath(maze, current, visited);
 
-    return generateBoundedPath(maze, current, closed, delay);
+    return generateBoundedPath(maze, current, visited, delay);
   }, null, delay);
 }
 
-function connectToExistingPath(maze, cell, closed) {
-  var closedAdjacents = maze.adjacents(cell).filter(function(adj) {
-    return closed.has(adj.id);
+function connectToExistingPath(maze, cell, visited) {
+  var visitedAdjacents = maze.adjacents(cell).filter(function(adj) {
+    return visited.has(adj.id);
   });
-  var adj = randomArrayItem(closedAdjacents);
+  var adj = randomArrayItem(visitedAdjacents);
   maze.openBetween(cell, adj);
 }
 
-function generateBoundedPath(maze, start, closed, delay) {
+function generateBoundedPath(maze, start, visited, delay) {
   var open = [start];
   var lastMarked = null;
   return asyncLoop(function(_, finish) {
@@ -140,14 +140,14 @@ function generateBoundedPath(maze, start, closed, delay) {
     if (lastMarked) lastMarked.markVisited();
     lastMarked = current;
 
-    if (closed.has(current.id)) {
+    if (visited.has(current.id)) {
       return;
     }
-    closed.add(current.id);
+    visited.add(current.id);
 
     var adjacents = maze.adjacents(current);
     var unvisitedAdjacents = adjacents.filter(function(adj) {
-      return !closed.has(adj.id);
+      return !visited.has(adj.id);
     });
     if (unvisitedAdjacents.length) {
       var next = randomArrayItem(unvisitedAdjacents);
@@ -166,7 +166,7 @@ function generateBoundedPath(maze, start, closed, delay) {
 }
 
 // does a search and returns all the unvisited adjacents
-function unvisitedFromPath(maze, startCell, closed) {
+function unvisitedFromPath(maze, startCell, visited) {
   var open = [startCell];
   var seen = new Set();
 
@@ -186,7 +186,7 @@ function unvisitedFromPath(maze, startCell, closed) {
       if (seen.has(adj)) {
         continue;
       }
-      if (closed.has(adj.id)) {
+      if (visited.has(adj.id)) {
         open.push(adj);
       }
       else if (!unvisited.has(adj.id)) {
