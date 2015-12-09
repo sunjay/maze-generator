@@ -18,6 +18,7 @@ Cell.FINISH = "finish";
 
 // cell markers
 Cell.CURRENT = "current";
+Cell.VISITED = "visited";
 
 Cell.prototype.isNormal = function() {
   return this.type === Cell.NORMAL;
@@ -76,8 +77,17 @@ Cell.prototype.markCurrent = function() {
   return this;
 };
 
+Cell.prototype.markVisited = function() {
+  this.mark = Cell.VISITED;
+  return this;
+};
+
 Cell.prototype.isMarkedCurrent = function() {
   return this.mark === Cell.CURRENT;
+};
+
+Cell.prototype.isMarkedVisited = function() {
+  return this.mark === Cell.VISITED;
 };
 
 /**
