@@ -17,6 +17,7 @@ document.getElementById('generate').addEventListener('click', generate);
 
 function solve() {
   if (solverPromise) {
+    //TODO: Make solving cancellable
     return;
   }
 
