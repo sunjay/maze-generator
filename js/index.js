@@ -3,17 +3,53 @@ var ctx = canvas.getContext("2d");
 
 var maze = new Maze();
 var pathsPromise = generatePaths(maze);
+var solverPromise = null;
 
 function generate() {
-  if (pathsPromise) {
-    pathsPromise.abort();
-  }
+  cancelGenerate();
+  cancelSolve();
 
   var size = document.getElementById('size').value;
   maze = new Maze(size, size);
   pathsPromise = generatePaths(maze);
 }
 document.getElementById('generate').addEventListener('click', generate);
+
+function solve() {
+  if (solverPromise) {
+    return;
+  }
+
+  setSolveStatus("Waiting for generator to finish...");
+  solverPromise = pathsPromise.then(function() {
+    setSolveStatus("Solving...");
+  }).then(function() {
+    setSolveStatus("Solved.");
+    solverPromise = null;
+  });
+}
+document.getElementById('solve').addEventListener('click', solve);
+
+function cancelGenerate() {
+  if (pathsPromise) {
+    pathsPromise.abort();
+  }
+}
+
+function cancelSolve() {
+  if (solverPromise) {
+    setSolveStatus("Solve cancelled.");
+    solverPromise.abort();
+    solverPromise = null;
+  }
+  else {
+    setSolveStatus("");
+  }
+}
+
+function setSolveStatus(string) {
+  document.getElementById('solve-status').textContent = string;
+}
 
 function render() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);

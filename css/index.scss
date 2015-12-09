@@ -15,6 +15,17 @@ html, body
   box-sizing: border-box;
 }
 
+hr
+{
+  border: 1px solid #EEE;
+  border-bottom: 0;
+}
+
+h1
+{
+  text-align: center;
+}
+
 // When you're too lazy to write real layout code...
 $maze-width: 70%;
 $controls-width: 100% - $maze-width;
@@ -39,7 +50,6 @@ $controls-width: 100% - $maze-width;
 
   h1:first-child
   {
-    text-align: center;
     margin-top: 0;
   }
 }

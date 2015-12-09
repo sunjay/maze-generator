@@ -274,15 +274,22 @@ function asyncLoop(callback, value, delay) {
 }
 
 function modifiedPromise(promise, abort) {
-  return {
-    abort: abort,
-    then: function() {
-      promise = promise.then.apply(promise, arguments);
-      return modifiedPromise(promise, abort);
-    },
-    catch: function() {
-      promise = promise.catch.apply(promise, arguments);
-      return modifiedPromise(promise, abort);
+  var promiseAbort = promise.abort;
+  promise.abort = function() {
+    if (promiseAbort) {
+      promiseAbort.apply(promise, arguments);
     }
+    abort();
   };
+  var promiseThen = promise.then;
+  promise.then = function() {
+    promise = promiseThen.apply(promise, arguments);
+    return modifiedPromise(promise, abort);
+  };
+  var promiseCatch = promise.catch;
+  promise.catch = function() {
+    promise = promiseCatch.apply(promise, arguments);
+    return modifiedPromise(promise, abort);
+  };
+  return promise;
 }
