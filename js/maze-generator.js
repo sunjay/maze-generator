@@ -8,7 +8,9 @@ function generatePaths(maze) {
 
   var start = maze.randomEdge().setStart();
 
-  generateSolution(maze, start, delay);
+  return generateSolution(maze, start, delay).then(function() {
+    return;
+  });
 }
 
 function generateSolution(maze, start, delay) {
@@ -157,9 +159,22 @@ function asyncLoop(callback, value, delay) {
       });
     }, delay || 0);
   });
-  promise.abort = function() {
-    status.finish();
-  };
 
-  return promise;
+  return modifiedPromise(promise, function() {
+    status.finish();
+  });
+}
+
+function modifiedPromise(promise, abort) {
+  return {
+    abort: abort,
+    then: function() {
+      promise = promise.then.apply(promise, arguments);
+      return modifiedPromise(promise, abort);
+    },
+    catch: function() {
+      promise = promise.catch.apply(promise, arguments);
+      return modifiedPromise(promise, abort);
+    }
+  };
 }
