@@ -4,9 +4,33 @@ var SOLVING_ALGORITHMS = {
 };
 
 function solveMaze(maze, algorithm) {
-  return SOLVING_ALGORITHMS[algorithm](maze);
+  var delay = 500/Math.max(maze.rows(), maze.cols());
+
+  return SOLVING_ALGORITHMS[algorithm](maze, delay);
 }
 
-function solveMazeDepthFirst(maze) {
-  console.log('solving depth first');
+function solveMazeDepthFirst(maze, delay) {
+  var start = maze.findStart();
+  var open = [start];
+  var visited = new Set();
+
+  return asyncLoop(function(_, finish) {
+    if (!open.length) {
+      console.error("Exhausted search.");
+      return finish();
+    }
+
+    var current = open.splice(0, 1)[0].markVisited();
+    if (visited.has(current.id)) {
+      return;
+    }
+    visited.add(current.id);
+
+    if (current.isFinish()) {
+      return finish();
+    }
+
+    var openAdjacents = maze.openAdjacents(current);
+    Array.prototype.push.apply(open, openAdjacents);
+  }, null, delay);
 }
