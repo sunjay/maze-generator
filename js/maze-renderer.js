@@ -19,7 +19,7 @@ function renderMaze(ctx, maze, x, y, width, height) {
   ctx.stroke();
 }
 
-function renderVisited(ctx, maze, x, y, width, height) {
+function renderConnected(ctx, maze, x, y, width, height, criteraCallback) {
   var cellWidth = Math.floor(width / maze.cols());
   var cellHeight = Math.floor(height / maze.rows());
 
@@ -34,19 +34,19 @@ function renderVisited(ctx, maze, x, y, width, height) {
       var colOffset = x + cellWidth * j;
 
       var cell = maze.get(i, j);
-      if (cell.isMarkedVisited()) {
-        renderCellVisitedConnections(ctx, maze, cell, colOffset, rowOffset, cellWidth, cellHeight);
+      if (criteraCallback(cell)) {
+        renderCellConnections(ctx, maze, cell, colOffset, rowOffset, cellWidth, cellHeight, criteraCallback);
       }
     }
   }
   ctx.stroke();
 }
 
-function renderCellVisitedConnections(ctx, maze, cell, x, y, width, height) {
+function renderCellConnections(ctx, maze, cell, x, y, width, height, criteraCallback) {
   var centerX = x + width/2;
   var centerY = y + height/2;
   maze.openAdjacents(cell).forEach(function(adj) {
-    if (adj.isMarkedVisited()) {
+    if (criteraCallback(adj)) {
       var direction = cell.directionTo(adj);
       var offset = Direction.shift(0, 0, direction);
       var rowOffset = offset[0], colOffset = offset[1];
