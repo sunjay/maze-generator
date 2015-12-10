@@ -39,6 +39,32 @@ Maze.prototype.isEdge = function(cell) {
 };
 
 /**
+ * Attempts to find the start cell on the edge of the maze
+ */
+Maze.prototype.findStart = function() {
+  var edgeCells = this.edgeCells();
+  for (var i = 0; i < edgeCells.length; i++) {
+    var cell = edgeCells[i];
+    if (cell.isStart()) {
+      return cell;
+    }
+  }
+};
+
+/**
+ * Attempts to find the start cell on the edge of the maze
+ */
+Maze.prototype.findFinish = function() {
+  var edgeCells = this.edgeCells();
+  for (var i = 0; i < edgeCells.length; i++) {
+    var cell = edgeCells[i];
+    if (cell.isFinish()) {
+      return cell;
+    }
+  }
+};
+
+/**
  * Returns a list of all the edge cells (in no particular order)
  */
 Maze.prototype.edgeCells = function() {
@@ -125,8 +151,26 @@ Maze.prototype.closeWall = function(cell, direction) {
  * May not always be four for edge vertexes
  */
 Maze.prototype.adjacents = function(cell) {
+  return this._adjacentsInDirections(cell, Direction.all());
+};
+
+/**
+ * Returns only the adjacents towards which the wall is open from this cell
+ */
+Maze.prototype.openAdjacents = function(cell) {
+  return this._adjacentsInDirections(cell, Array.from(cell.openDirections));
+};
+
+/**
+ * Returns only the adjacents towards which the wall is open from this cell
+ */
+Maze.prototype.closedAdjacents = function(cell) {
+  return this._adjacentsInDirections(cell, Array.from(cell.closedDirections));
+};
+
+Maze.prototype._adjacentsInDirections = function(cell, directions) {
   var adjacents = [];
-  Direction.all().forEach(function(direction) {
+  directions.forEach(function(direction) {
     var adj = this.adjacentTo(cell, direction);
     if (adj) {
       adjacents.push(adj);
@@ -142,5 +186,28 @@ Maze.prototype.adjacents = function(cell) {
 Maze.prototype.adjacentTo = function(cell, direction) {
   var adjCoords = Direction.shift(cell.row, cell.col, direction);
   return this.get(adjCoords[0], adjCoords[1]);
+};
+
+/**
+ * Returns a list of all the cells
+ */
+Maze.prototype.cells = function() {
+  var cells = [];
+  for (var i = 0; i < maze.rows(); i++) {
+    for (var j = 0; j < maze.cols(); j++) {
+      var cell = maze.get(i, j);
+      cells.push(cell);
+    }
+  }
+  return cells;
+};
+
+/**
+ * Returns all the cells marked visited
+ */
+Maze.prototype.visitedCells = function() {
+  return this.cells().filter(function(cell) {
+    return cell.isMarkedVisited();
+  });
 };
 
