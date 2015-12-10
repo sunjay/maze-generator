@@ -143,19 +143,13 @@ Cell.prototype.isAdjacent = function(other) {
  * The cells must be adjacent
  */
 Cell.prototype.directionTo = function(other) {
-  if ((this.row - 1) === other.row) {
-    return Direction.N;
+  var directions = Direction.all();
+  for (var i = 0; i < directions.length; i++) {
+    var direction = directions[i];
+    var shifted = Direction.shift(this.row, this.col, direction);
+    if (shifted[0] === other.row && shifted[1] === other.col) {
+      return direction;
+    }
   }
-  else if ((this.row + 1) === other.row) {
-    return Direction.S;
-  }
-  else if ((this.col - 1) === other.col) {
-    return Direction.E;
-  }
-  else if ((this.col + 1) === other.col) {
-    return Direction.W;
-  }
-  else {
-    throw new Error("Other cell is not adjacent");
-  }
+  throw new Error("Other cell is not adjacent");
 };

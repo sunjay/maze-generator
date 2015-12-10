@@ -1,5 +1,5 @@
 function Direction() {
-  throw new Error("Don't use this varructor");
+  throw new Error("Don't use this constructor");
 }
 
 Direction.N = 'north';
@@ -18,8 +18,8 @@ Direction.TRANSLATIONS = {};
 // [row, col]
 Direction.TRANSLATIONS[Direction.N] = [-1, 0];
 Direction.TRANSLATIONS[Direction.S] = [+1, 0];
-Direction.TRANSLATIONS[Direction.E] = [0, -1];
-Direction.TRANSLATIONS[Direction.W] = [0, +1];
+Direction.TRANSLATIONS[Direction.E] = [0, +1];
+Direction.TRANSLATIONS[Direction.W] = [0, -1];
 
 /**
  * Returns a list of all the directions
