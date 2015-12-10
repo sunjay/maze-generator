@@ -78,18 +78,19 @@ function renderCell(ctx, cell, x, y, width, height) {
   if (cell.isFinish()) {
     renderSquare(ctx, x, y, width, height, "red");
   }
-  if (cell.isClosed(Direction.N)) {
-    renderLine(ctx, x, y, x + width, y);
-  }
-  if (cell.isClosed(Direction.S)) {
-    renderLine(ctx, x, y + height, x + width, y + height);
-  }
-  if (cell.isClosed(Direction.E)) {
-    renderLine(ctx, x, y, x, y + height);
-  }
-  if (cell.isClosed(Direction.W)) {
-    renderLine(ctx, x + width, y, x + width, y + height);
-  }
+  Array.from(cell.closedDirections).forEach(function(direction) {
+    var offset = Direction.shift(0, 0, direction);
+    var rowOffset = offset[0], colOffset = offset[1];
+    renderLine(
+      ctx,
+      // these were derived by writing out each case
+      // and generalizing it, no clue what the intuition is
+      x + ((colOffset > 0) ? width : 0),
+      y + ((rowOffset > 0) ? height : 0),
+      x + ((colOffset < 0) ? 0 : width),
+      y + ((rowOffset < 0) ? 0 : height)
+    );
+  });
 }
 
 function renderLine(ctx, x, y, x2, y2) {
