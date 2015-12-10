@@ -1,7 +1,7 @@
 function MazeRenderer(maze) {
   this.maze = maze;
   // padding will not be perfectly applied due to rounding during rendering
-  this.padding = 3;
+  this.padding = 15;
 
   this.canvas = {
     background: null,
@@ -19,7 +19,14 @@ function MazeRenderer(maze) {
       lineWidth: 2
     }
   }
+
+  this.backgroundCache = this.emptyBackgroundCache();
 }
+
+MazeRenderer.prototype.setMaze = function(maze) {
+  this.maze = maze;
+  this.backgroundCache = this.emptyBackgroundCache();
+};
 
 MazeRenderer.prototype.setBackgroundCanvas = function(canvas, ctx) {
   this.canvas.background = canvas;
@@ -50,7 +57,11 @@ MazeRenderer.prototype.renderBackground = function() {
   var ctx = this.ctx.background;
   var info = this._drawingInfo(canvas, ctx);
 
-  ctx.clearRect(0, 0, info.width, info.height);
+  // clear the area around the drawing area
+  ctx.clearRect(0, 0, info.width, info.y - 1);
+  ctx.clearRect(0, 0, info.x - 1, info.height);
+  ctx.clearRect(0, info.y + info.drawingHeight, info.width, info.height);
+  ctx.clearRect(info.x + info.drawingWidth, 0, info.width, info.height);
 
   for (var i = 0; i < info.rows; i++) {
     var rowOffset = info.y + i * info.cellHeight;
@@ -131,23 +142,27 @@ MazeRenderer.prototype.renderSolution = function() {
 };
 
 MazeRenderer.prototype._drawingInfo = function(canvas, ctx) {
-  var x = this.padding;
-  var y = this.padding;
   var width = canvas.width;
   var height = canvas.height;
-
-  var drawingWidth = width - this.padding * 2;
-  var drawingHeight = height - this.padding * 2;
 
   var rows = this.maze.rows();
   var cols = this.maze.cols();
 
-  var cellWidth = Math.floor(width / cols);
-  var cellHeight = Math.floor(height / rows);
+  // these values need to be rounded to the nearest multiple of the number
+  // of rows/cols in order to make the rendering more accurate
+  // this means the padding won't be as exact
+  var drawingWidth = width - this.padding * 2;
+  drawingWidth = Math.round(drawingWidth/cols)*cols;
+  var drawingHeight = height - this.padding * 2;
+  drawingHeight = Math.round(drawingHeight/rows)*rows;
 
-  // need to adjust x and y slightly so centered
-  x += (width - cellWidth * cols)/2;
-  y += (height - cellHeight * rows)/2;
+  var cellWidth = Math.floor(drawingWidth / cols);
+  var cellHeight = Math.floor(drawingHeight / rows);
+
+  // essentially calculating the "real" padding by accounting for the
+  // rounding done previously
+  x = (width - drawingWidth)/2;
+  y = (height - drawingHeight)/2;
 
   return {
     x: x,
@@ -164,6 +179,13 @@ MazeRenderer.prototype._drawingInfo = function(canvas, ctx) {
 };
 
 MazeRenderer.prototype.renderCellBackground = function(ctx, cell, x, y, width, height) {
+  if (!this.backgroundCacheNeedsUpdate(cell, x, y, width, height)) {
+    return;
+  }
+  this.updateBackgroundCache(cell, x, y, width, height);
+
+  ctx.clearRect(x, y, width, height);
+
   if (cell.isMarkedCurrent()) {
     renderSquare(ctx, x, y, width, height, "cyan");
   }
@@ -179,6 +201,54 @@ MazeRenderer.prototype.renderCellBackground = function(ctx, cell, x, y, width, h
   if (cell.isFinish()) {
     renderSquare(ctx, x, y, width, height, "red");
   }
+};
+
+MazeRenderer.prototype.emptyBackgroundCache = function() {
+  var cache = {};
+  this.maze.cells().forEach(function(cell) {
+    if (!cache[cell.row]) {
+      cache[cell.row] = {};
+    }
+    cache[cell.row][cell.col] = {};
+  });
+  return cache;
+};
+
+MazeRenderer.prototype.backgroundCacheNeedsUpdate = function(cell, x, y, width, height) {
+  var cellCache = this.backgroundCache[cell.row][cell.col];
+  if (cellCache.x !== x || cellCache.y !== y
+      || cellCache.width !== width || cellCache.height !== height) {
+    return true;
+  }
+  if (!cellCache.marks) {
+    return true;
+  }
+  if (!setsAreEqual(cell.marks, cellCache.marks)) {
+    return true;
+  }
+  if (cell.type !== cellCache.type) {
+    return true;
+  }
+  return false;
+};
+
+MazeRenderer.prototype.updateBackgroundCache = function(cell, x, y, width, height) {
+  var cellCache = this.backgroundCache[cell.row][cell.col];
+  cellCache.x = x;
+  cellCache.y = y;
+  cellCache.width = width;
+  cellCache.height = height;
+  cellCache.marks = new Set(cell.marks);
+  cellCache.type = cell.type;
+};
+
+function setsAreEqual(s1, s2) {
+  if (s1.size !== s2.size) {
+    return false;
+  }
+  return Array.from(s1).every(function(item) {
+    return s2.has(item);
+  });
 }
 
 /*
