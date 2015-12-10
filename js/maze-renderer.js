@@ -1,22 +1,94 @@
 function renderMaze(ctx, maze, x, y, width, height) {
-  var cellWidth = Math.floor(width / maze.cols());
-  var cellHeight = Math.floor(height / maze.rows());
+  var rows = maze.rows();
+  var cols = maze.cols();
+
+  var cellWidth = Math.floor(width / cols);
+  var cellHeight = Math.floor(height / rows);
 
   // need to adjust x and y slightly so centered
-  x += (width - cellWidth * maze.cols())/2;
-  y += (height - cellHeight * maze.rows())/2;
+  x += (width - cellWidth * cols)/2;
+  y += (height - cellHeight * rows)/2;
+
+  var rowsArray = [];
+  var colsArray = [];
 
   ctx.beginPath();
-  for (var i = 0; i < maze.rows(); i++) {
-    var rowOffset = y + cellHeight * i;
-    for (var j = 0; j < maze.cols(); j++) {
-      var colOffset = x + cellWidth * j;
 
+  for (var i = 0; i < rows; i++) {
+    var rowOffset = y + i * cellHeight;
+    var row = [];
+    for (var j = 0; j < cols; j++) {
+      var colOffset = x + j * cellWidth;
+      if (i === 0) {
+        colsArray.push([]);
+      }
       var cell = maze.get(i, j);
-      renderCell(ctx, cell, colOffset, rowOffset, cellWidth, cellHeight);
+      renderCellBackground(ctx, cell, colOffset, rowOffset, cellWidth, cellHeight);
+
+      row.push(cell);
+      colsArray[j].push(cell);
+    }
+    rowsArray.push(row);
+  }
+
+  renderRow(ctx, rowsArray[0], Direction.N, 0, x, y, cellWidth, cellHeight);
+  rowsArray.forEach(function(row, index) {
+    renderRow(ctx, row, Direction.S, index + 1, x, y, cellWidth, cellHeight);
+  });
+
+  renderCol(ctx, colsArray[0], Direction.W, 0, x, y, cellWidth, cellHeight);
+  colsArray.forEach(function(col, index) {
+    renderCol(ctx, col, Direction.E, index + 1, x, y, cellWidth, cellHeight);
+  });
+  
+  ctx.stroke();
+}
+
+/*
+ * Renders the given direction across the entire row
+ * adjoining adjacent walls.
+ * direction should be N or S
+ */
+function renderRow(ctx, row, direction, index, x, y, width, height) {
+  var offset = y + index * height;
+  adjoinAndRender(row, direction, function(index1, index2) {
+    renderLine(ctx, x + index1 * width, offset, x + index2 * width, offset);
+  });
+}
+
+/*
+ * Renders the given direction across the entire col
+ * adjoining adjacent walls.
+ * direction should be W or E
+ */
+function renderCol(ctx, col, direction, index, x, y, width, height) {
+  var offset = x + index * width;
+  adjoinAndRender(col, direction, function(index1, index2) {
+    renderLine(ctx, offset, y + index1 * height, offset, y + index2 * height);
+  });
+}
+
+/**
+ * Goes through the given cells and calls render(index1, index2)
+ * Automatically adjoins adjacent cells where the direction is closed
+ */
+function adjoinAndRender(cells, direction, render) {
+  var currentRunStart = null;
+  for (var i = 0; i <= cells.length; i++) {
+    var cell = cells[i];
+
+    if (cell && cell.isClosed(direction)) {
+      if (currentRunStart === null) {
+        currentRunStart = i;
+      }
+    }
+    else {
+      if (currentRunStart !== null) {
+        render(currentRunStart, i);
+        currentRunStart = null;
+      }
     }
   }
-  ctx.stroke();
 }
 
 function renderConnected(ctx, maze, x, y, width, height, criteraCallback) {
@@ -62,7 +134,7 @@ function renderCellConnections(ctx, maze, cell, x, y, width, height, criteraCall
   });
 }
 
-function renderCell(ctx, cell, x, y, width, height) {
+function renderCellBackground(ctx, cell, x, y, width, height) {
   if (cell.isMarkedCurrent()) {
     renderSquare(ctx, x, y, width, height, "cyan");
   }
@@ -78,6 +150,10 @@ function renderCell(ctx, cell, x, y, width, height) {
   if (cell.isFinish()) {
     renderSquare(ctx, x, y, width, height, "red");
   }
+}
+
+function renderCell(ctx, cell, x, y, width, height) {
+  renderCellBackground(ctx, cell, x, y, width, height);
   Array.from(cell.closedDirections).forEach(function(direction) {
     var offset = Direction.shift(0, 0, direction);
     var rowOffset = offset[0], colOffset = offset[1];
