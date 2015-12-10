@@ -1,10 +1,10 @@
-var mazeCanvas = document.getElementById("maze");
-var mazeCtx = mazeCanvas.getContext("2d");
+var backgroundCanvas = document.getElementById("maze-bg");
+var wallsCanvas = document.getElementById("maze-walls");
 var solutionCanvas = document.getElementById("maze-solution");
-var solutionCtx = solutionCanvas.getContext("2d");
 
-var maze = new Maze();
-var pathsPromise = generatePaths(maze);
+var maze;
+var renderer;
+var pathsPromise;
 var solverPromise = null;
 
 function generate() {
@@ -13,9 +13,16 @@ function generate() {
 
   var size = document.getElementById('size').value;
   maze = new Maze(size, size);
+
+  renderer = new MazeRenderer(maze);
+  renderer.setBackgroundCanvas(backgroundCanvas);
+  renderer.setWallsCanvas(wallsCanvas);
+  renderer.setSolutionCanvas(solutionCanvas);
+
   pathsPromise = generatePaths(maze);
 }
 document.getElementById('generate').addEventListener('click', generate);
+generate();
 
 function solve() {
   if (solverPromise) {
@@ -80,28 +87,9 @@ function setSolveStatus(string) {
 }
 
 function render() {
-  var padding = 3;
-  var x = padding;
-  var y = padding;
-  var mazeWidth = mazeCanvas.width - padding * 2;
-  var mazeHeight = mazeCanvas.height - padding * 2;
-
-  mazeCtx.clearRect(0, 0, mazeCanvas.width, mazeCanvas.height);
-  mazeCtx.lineWidth = 2;
-  mazeCtx.strokeStyle = '#444';
-  renderMaze(mazeCtx, maze, x, y, mazeWidth, mazeHeight);
-
-  solutionCtx.clearRect(0, 0, solutionCanvas.width, solutionCanvas.height);
-  solutionCtx.lineWidth = 2;
-  solutionCtx.strokeStyle = 'blue';
-  renderConnected(solutionCtx, maze, x, y, mazeWidth, mazeHeight, function(cell) {
-    return cell.isMarkedVisited();
-  });
-  solutionCtx.lineWidth = 3;
-  solutionCtx.strokeStyle = '#33FF00';
-  renderConnected(solutionCtx, maze, x, y, mazeWidth, mazeHeight, function(cell) {
-    return cell.isMarkedSolution();
-  });
+  if (renderer) {
+    renderer.render();
+  }
 }
 
 function loop() {

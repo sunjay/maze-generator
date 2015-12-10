@@ -1,6 +1,146 @@
-function renderMaze(ctx, maze, x, y, width, height) {
-  var rows = maze.rows();
-  var cols = maze.cols();
+function MazeRenderer(maze) {
+  this.maze = maze;
+  // padding will not be perfectly applied due to rounding during rendering
+  this.padding = 3;
+
+  this.canvas = {
+    background: null,
+    walls: null,
+    solution: null
+  };
+  this.ctx = {
+    background: null,
+    walls: null,
+    solution: null
+  };
+  this.config = {
+    walls: {
+      style: '#444',
+      lineWidth: 2
+    }
+  }
+}
+
+MazeRenderer.prototype.setBackgroundCanvas = function(canvas, ctx) {
+  this.canvas.background = canvas;
+  this.ctx.background = ctx || canvas.getContext("2d");
+};
+
+MazeRenderer.prototype.setWallsCanvas = function(canvas, ctx) {
+  this.canvas.walls = canvas;
+  this.ctx.walls = ctx || canvas.getContext("2d");
+};
+
+MazeRenderer.prototype.setSolutionCanvas = function(canvas, ctx) {
+  this.canvas.solution = canvas;
+  this.ctx.solution = ctx || canvas.getContext("2d");
+};
+
+MazeRenderer.prototype.render = function() {
+  this.renderBackground();
+  this.renderWalls();
+  this.renderSolution();
+};
+
+MazeRenderer.prototype.renderBackground = function() {
+  if (!this.canvas.background || !this.ctx.background) {
+    return;
+  }
+  var canvas = this.canvas.background;
+  var ctx = this.ctx.background;
+  var info = this._drawingInfo(canvas, ctx);
+
+  ctx.clearRect(0, 0, info.width, info.height);
+
+  for (var i = 0; i < info.rows; i++) {
+    var rowOffset = info.y + i * info.cellHeight;
+    var row = [];
+    for (var j = 0; j < info.cols; j++) {
+      var colOffset = info.x + j * info.cellWidth;
+
+      var cell = this.maze.get(i, j);
+      this.renderCellBackground(ctx, cell, colOffset, rowOffset, info.cellWidth, info.cellHeight);
+    }
+  }
+};
+
+MazeRenderer.prototype.renderWalls = function() {
+  if (!this.canvas.walls || !this.ctx.walls) {
+    return;
+  }
+  var canvas = this.canvas.walls;
+  var ctx = this.ctx.walls;
+  var info = this._drawingInfo(canvas, ctx);
+
+  ctx.clearRect(0, 0, info.width, info.height);
+  ctx.lineWidth = this.config.walls.lineWidth;
+  ctx.strokeStyle = this.config.walls.style;
+
+  var rowsArray = [];
+  var colsArray = [];
+
+  ctx.beginPath();
+
+  for (var i = 0; i < info.rows; i++) {
+    var row = [];
+    for (var j = 0; j < info.cols; j++) {
+      if (i === 0) {
+        colsArray.push([]);
+      }
+      var cell = this.maze.get(i, j);
+
+      row.push(cell);
+      colsArray[j].push(cell);
+    }
+    rowsArray.push(row);
+  }
+
+  renderRow(ctx, rowsArray[0], Direction.N, 0, info.x, info.y, info.cellWidth, info.cellHeight);
+  rowsArray.forEach(function(row, index) {
+    renderRow(ctx, row, Direction.S, index + 1, info.x, info.y, info.cellWidth, info.cellHeight);
+  });
+
+  renderCol(ctx, colsArray[0], Direction.W, 0, info.x, info.y, info.cellWidth, info.cellHeight);
+  colsArray.forEach(function(col, index) {
+    renderCol(ctx, col, Direction.E, index + 1, info.x, info.y, info.cellWidth, info.cellHeight);
+  });
+  
+  ctx.stroke();
+};
+
+MazeRenderer.prototype.renderSolution = function() {
+  if (!this.canvas.solution || !this.ctx.solution) {
+    return;
+  }
+  var canvas = this.canvas.solution;
+  var ctx = this.ctx.solution;
+  var info = this._drawingInfo(canvas, ctx);
+
+  ctx.clearRect(0, 0, info.width, info.height);
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = 'blue';
+
+  renderConnected(ctx, this.maze, info.x, info.y, info.drawingWidth, info.drawingHeight, function(cell) {
+    return cell.isMarkedVisited();
+  });
+  ctx.lineWidth = 3;
+  ctx.strokeStyle = '#33FF00';
+  renderConnected(ctx, this.maze, info.x, info.y, info.drawingWidth, info.drawingHeight, function(cell) {
+    return cell.isMarkedSolution();
+  });
+};
+
+MazeRenderer.prototype._drawingInfo = function(canvas, ctx) {
+  var x = this.padding;
+  var y = this.padding;
+  var width = canvas.width;
+  var height = canvas.height;
+
+  var drawingWidth = width - this.padding * 2;
+  var drawingHeight = height - this.padding * 2;
+
+  var rows = this.maze.rows();
+  var cols = this.maze.cols();
 
   var cellWidth = Math.floor(width / cols);
   var cellHeight = Math.floor(height / rows);
@@ -9,39 +149,36 @@ function renderMaze(ctx, maze, x, y, width, height) {
   x += (width - cellWidth * cols)/2;
   y += (height - cellHeight * rows)/2;
 
-  var rowsArray = [];
-  var colsArray = [];
+  return {
+    x: x,
+    y: y,
+    width: width,
+    height: height,
+    drawingWidth: drawingWidth,
+    drawingHeight: drawingHeight,
+    rows: rows,
+    cols: cols,
+    cellWidth: cellWidth,
+    cellHeight: cellHeight
+  };
+};
 
-  ctx.beginPath();
-
-  for (var i = 0; i < rows; i++) {
-    var rowOffset = y + i * cellHeight;
-    var row = [];
-    for (var j = 0; j < cols; j++) {
-      var colOffset = x + j * cellWidth;
-      if (i === 0) {
-        colsArray.push([]);
-      }
-      var cell = maze.get(i, j);
-      renderCellBackground(ctx, cell, colOffset, rowOffset, cellWidth, cellHeight);
-
-      row.push(cell);
-      colsArray[j].push(cell);
-    }
-    rowsArray.push(row);
+MazeRenderer.prototype.renderCellBackground = function(ctx, cell, x, y, width, height) {
+  if (cell.isMarkedCurrent()) {
+    renderSquare(ctx, x, y, width, height, "cyan");
   }
-
-  renderRow(ctx, rowsArray[0], Direction.N, 0, x, y, cellWidth, cellHeight);
-  rowsArray.forEach(function(row, index) {
-    renderRow(ctx, row, Direction.S, index + 1, x, y, cellWidth, cellHeight);
-  });
-
-  renderCol(ctx, colsArray[0], Direction.W, 0, x, y, cellWidth, cellHeight);
-  colsArray.forEach(function(col, index) {
-    renderCol(ctx, col, Direction.E, index + 1, x, y, cellWidth, cellHeight);
-  });
-  
-  ctx.stroke();
+  else if (cell.isMarkedGenerated()) {
+    renderSquare(ctx, x, y, width, height, "white");
+  }
+  else {
+    renderSquare(ctx, x, y, width, height, this.config.walls.style);
+  }
+  if (cell.isStart()) {
+    renderSquare(ctx, x, y, width, height, "lightgreen");
+  }
+  if (cell.isFinish()) {
+    renderSquare(ctx, x, y, width, height, "red");
+  }
 }
 
 /*
@@ -131,41 +268,6 @@ function renderCellConnections(ctx, maze, cell, x, y, width, height, criteraCall
         centerY + height/2 * rowOffset
       );
     }
-  });
-}
-
-function renderCellBackground(ctx, cell, x, y, width, height) {
-  if (cell.isMarkedCurrent()) {
-    renderSquare(ctx, x, y, width, height, "cyan");
-  }
-  else if (cell.isMarkedGenerated()) {
-    renderSquare(ctx, x, y, width, height, "white");
-  }
-  else {
-    renderSquare(ctx, x, y, width, height, ctx.strokeStyle);
-  }
-  if (cell.isStart()) {
-    renderSquare(ctx, x, y, width, height, "lightgreen");
-  }
-  if (cell.isFinish()) {
-    renderSquare(ctx, x, y, width, height, "red");
-  }
-}
-
-function renderCell(ctx, cell, x, y, width, height) {
-  renderCellBackground(ctx, cell, x, y, width, height);
-  Array.from(cell.closedDirections).forEach(function(direction) {
-    var offset = Direction.shift(0, 0, direction);
-    var rowOffset = offset[0], colOffset = offset[1];
-    renderLine(
-      ctx,
-      // these were derived by writing out each case
-      // and generalizing it, no clue what the intuition is
-      x + ((colOffset > 0) ? width : 0),
-      y + ((rowOffset > 0) ? height : 0),
-      x + ((colOffset < 0) ? 0 : width),
-      y + ((rowOffset < 0) ? 0 : height)
-    );
   });
 }
 
