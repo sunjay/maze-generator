@@ -232,10 +232,6 @@ function renderConnected(ctx, maze, x, y, width, height, criteraCallback) {
   var cellWidth = Math.floor(width / maze.cols());
   var cellHeight = Math.floor(height / maze.rows());
 
-  // need to adjust x and y slightly so centered
-  x += (width - cellWidth * maze.cols())/2;
-  y += (height - cellHeight * maze.rows())/2;
-
   ctx.beginPath();
   for (var i = 0; i < maze.rows(); i++) {
     var rowOffset = y + cellHeight * i;
