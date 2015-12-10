@@ -6,6 +6,7 @@ var maze;
 var renderer;
 var pathsPromise;
 var solverPromise = null;
+generate();
 
 function generate() {
   cancelGenerate();
@@ -22,7 +23,6 @@ function generate() {
   pathsPromise = generatePaths(maze);
 }
 document.getElementById('generate').addEventListener('click', generate);
-generate();
 
 function solve() {
   if (solverPromise) {
