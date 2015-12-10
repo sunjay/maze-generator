@@ -35,7 +35,7 @@ function solve() {
       }
 
       maze.visitedCells().forEach(function(cell) {
-        cell.unmarkVisited();
+        cell.unmarkVisited().unmarkSolution();
       });
 
       setSolveStatus("Solving...");
@@ -94,7 +94,14 @@ function render() {
   solutionCtx.clearRect(0, 0, solutionCanvas.width, solutionCanvas.height);
   solutionCtx.lineWidth = 2;
   solutionCtx.strokeStyle = 'blue';
-  renderVisited(solutionCtx, maze, x, y, mazeWidth, mazeHeight);
+  renderConnected(solutionCtx, maze, x, y, mazeWidth, mazeHeight, function(cell) {
+    return cell.isMarkedVisited();
+  });
+  solutionCtx.lineWidth = 3;
+  solutionCtx.strokeStyle = '#33FF00';
+  renderConnected(solutionCtx, maze, x, y, mazeWidth, mazeHeight, function(cell) {
+    return cell.isMarkedSolution();
+  });
 }
 
 function loop() {
