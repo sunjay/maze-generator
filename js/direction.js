@@ -1,5 +1,5 @@
 function Direction() {
-  throw new Error("Don't use this varructor");
+  throw new Error("Don't use this constructor");
 }
 
 Direction.N = 'north';
