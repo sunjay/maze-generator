@@ -4,7 +4,7 @@ function Cell(row, col) {
 
   this.id = Cell._idx++;
   this.type = Cell.NORMAL;
-  this.mark = null;
+  this.marks = new Set();
 
   this.openDirections = new Set();
   this.closedDirections = new Set(Direction.all());
@@ -19,6 +19,7 @@ Cell.FINISH = "finish";
 // cell markers
 Cell.CURRENT = "current";
 Cell.VISITED = "visited";
+Cell.GENERATED = "generated";
 
 Cell.prototype.isNormal = function() {
   return this.type === Cell.NORMAL;
@@ -67,27 +68,51 @@ Cell.prototype.isClosed = function(direction) {
   return this.closedDirections.has(direction);
 };
 
-Cell.prototype.removeMark = function() {
-  this.mark = null;
+Cell.prototype.clearMarks = function() {
+  this.marks.clear();
   return this;
 };
 
 Cell.prototype.markCurrent = function() {
-  this.mark = Cell.CURRENT;
+  this.marks.add(Cell.CURRENT);
   return this;
 };
 
 Cell.prototype.markVisited = function() {
-  this.mark = Cell.VISITED;
+  this.marks.add(Cell.VISITED);
+  return this;
+};
+
+Cell.prototype.markGenerated = function() {
+  this.marks.add(Cell.GENERATED);
+  return this;
+};
+
+Cell.prototype.unmarkCurrent = function() {
+  this.marks.delete(Cell.CURRENT);
+  return this;
+};
+
+Cell.prototype.unmarkVisited = function() {
+  this.marks.delete(Cell.VISITED);
+  return this;
+};
+
+Cell.prototype.unmarkGenerated = function() {
+  this.marks.delete(Cell.GENERATED);
   return this;
 };
 
 Cell.prototype.isMarkedCurrent = function() {
-  return this.mark === Cell.CURRENT;
+  return this.marks.has(Cell.CURRENT);
 };
 
 Cell.prototype.isMarkedVisited = function() {
-  return this.mark === Cell.VISITED;
+  return this.marks.has(Cell.VISITED);
+};
+
+Cell.prototype.isMarkedGenerated = function() {
+  return this.marks.has(Cell.GENERATED);
 };
 
 /**
