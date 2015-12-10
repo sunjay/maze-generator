@@ -25,6 +25,8 @@ function solve() {
 
   setSolveStatus("Waiting for generator to finish...");
 
+  var visited;
+  var updateInterval;
   var aborted = false;
   solverPromise = modifiedPromise(new Promise(function(resolve, reject) {
     pathsPromise.then(function() {
@@ -32,13 +34,20 @@ function solve() {
         return;
       }
       setSolveStatus("Solving...");
+      updateInterval = setInterval(function() {
+        setSolveStatus("Solving... (steps: " + Array.from(visited).length + ")");
+      }, 500);
+
       var algorithm = document.getElementById('solver-algorithm').value;
-      resolve(solveMaze(maze, algorithm));
+      visited = new Set();
+      resolve(solveMaze(maze, algorithm, visited));
     }).catch(reject);
   }), function() {
     aborted = true;
+    clearInterval(updateInterval);
   }).then(function() {
-    setSolveStatus("Solved.");
+    clearInterval(updateInterval);
+    setSolveStatus("Solved in " + Array.from(visited).length + " steps.");
     solverPromise = null;
   });
 }

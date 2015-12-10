@@ -4,21 +4,19 @@ var SOLVING_ALGORITHMS = {
   "depth-first": solveMazeDepthFirst
 };
 
-function solveMaze(maze, algorithm) {
+function solveMaze(maze, algorithm, visited) {
   var delay = 500/Math.max(maze.rows(), maze.cols());
 
-  return SOLVING_ALGORITHMS[algorithm](maze, delay);
+  return SOLVING_ALGORITHMS[algorithm](maze, visited, delay);
 }
 
-function solveMazeBreadthFirst(maze, delay) {
+function solveMazeBreadthFirst(maze, visited, delay) {
   var start = maze.findStart();
   var open = [start];
-  var visited = new Set();
 
   return asyncLoop(function(_, finish) {
     if (!open.length) {
-      console.error("Exhausted search.");
-      return finish();
+      throw new Error("Exhausted search.");
     }
 
     var current = open.splice(0, 1)[0].markVisited();
@@ -36,15 +34,13 @@ function solveMazeBreadthFirst(maze, delay) {
   }, null, delay);
 }
 
-function solveMazeDepthFirst(maze, delay) {
+function solveMazeDepthFirst(maze, visited, delay) {
   var start = maze.findStart();
   var open = [start];
-  var visited = new Set();
 
   return asyncLoop(function(_, finish) {
     if (!open.length) {
-      console.error("Exhausted search.");
-      return finish();
+      throw new Error("Exhausted search.");
     }
 
     var current = open.splice(0, 1)[0].markVisited();
