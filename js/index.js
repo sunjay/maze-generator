@@ -33,6 +33,11 @@ function solve() {
       if (aborted) {
         return;
       }
+
+      maze.visitedCells().forEach(function(cell) {
+        cell.unmarkVisited();
+      });
+
       setSolveStatus("Solving...");
       updateInterval = setInterval(function() {
         setSolveStatus("Solving... (steps: " + Array.from(visited).length + ")");

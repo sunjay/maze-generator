@@ -188,3 +188,26 @@ Maze.prototype.adjacentTo = function(cell, direction) {
   return this.get(adjCoords[0], adjCoords[1]);
 };
 
+/**
+ * Returns a list of all the cells
+ */
+Maze.prototype.cells = function() {
+  var cells = [];
+  for (var i = 0; i < maze.rows(); i++) {
+    for (var j = 0; j < maze.cols(); j++) {
+      var cell = maze.get(i, j);
+      cells.push(cell);
+    }
+  }
+  return cells;
+};
+
+/**
+ * Returns all the cells marked visited
+ */
+Maze.prototype.visitedCells = function() {
+  return this.cells().filter(function(cell) {
+    return cell.isMarkedVisited();
+  });
+};
+
