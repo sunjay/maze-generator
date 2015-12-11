@@ -220,10 +220,10 @@ MazeRenderer.prototype.backgroundCacheNeedsUpdate = function(cell, x, y, width, 
       || cellCache.width !== width || cellCache.height !== height) {
     return true;
   }
-  if (!cellCache.marks) {
+  if (!cellCache.marks || cellCache.marks.length !== cell.marks.size) {
     return true;
   }
-  if (!setsAreEqual(cell.marks, cellCache.marks)) {
+  if (!cellCache.marks.every(function(item) {return cell.marks.has(item)})) {
     return true;
   }
   if (cell.type !== cellCache.type) {
@@ -238,18 +238,9 @@ MazeRenderer.prototype.updateBackgroundCache = function(cell, x, y, width, heigh
   cellCache.y = y;
   cellCache.width = width;
   cellCache.height = height;
-  cellCache.marks = new Set(cell.marks);
+  cellCache.marks = Array.from(cell.marks);
   cellCache.type = cell.type;
 };
-
-function setsAreEqual(s1, s2) {
-  if (s1.size !== s2.size) {
-    return false;
-  }
-  return Array.from(s1).every(function(item) {
-    return s2.has(item);
-  });
-}
 
 /*
  * Renders the given direction across the entire row
