@@ -3,6 +3,7 @@
 
 html, body
 {
+  font-size: 14px;
   font-family: 'Roboto', sans-serif;
   height: 100%;
   padding: 0;
@@ -24,6 +25,11 @@ hr
 h1
 {
   text-align: center;
+}
+
+p
+{
+  line-height: 1.5;
 }
 
 // When you're too lazy to write real layout code...
@@ -78,3 +84,9 @@ canvas#maze-solution
 {
   z-index: 4;
 }
+
+.footer
+{
+  text-align: center;
+}
+
