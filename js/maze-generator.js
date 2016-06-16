@@ -4,7 +4,7 @@
  * Returns a promise to help determine when complete
  */
 function generatePaths(maze) {
-  var delay = 500/Math.max(maze.rows(), maze.cols());
+  var delay = 100/Math.max(maze.rows(), maze.cols());
 
   var start = maze.randomEdge().setStart();
 
