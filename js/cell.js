@@ -134,8 +134,10 @@ Cell.prototype.isMarkedSolution = function() {
  * Returns true if the cell is adjacent to the other given cell
  */
 Cell.prototype.isAdjacent = function(other) {
-  return Math.abs(this.row - other.row) === 1
-      && Math.abs(this.col - other.col) === 1;
+  let drow = Math.abs(this.row - other.row);
+  let dcol = Math.abs(this.col - other.col);
+  return (drow === 0 && dcol === 1)
+      || (drow === 1 && dcol === 0);
 };
 
 /**
@@ -153,3 +155,12 @@ Cell.prototype.directionTo = function(other) {
   }
   throw new Error("Other cell is not adjacent");
 };
+
+/**
+ * Returns true if there is NO wall between this cell and the other one
+ */
+Cell.prototype.isOpenTo = function(other) {
+  var direction = this.directionTo(other);
+  return this.isOpen(direction);
+};
+

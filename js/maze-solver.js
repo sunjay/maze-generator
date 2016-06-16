@@ -61,49 +61,57 @@ function solveMazeDepthFirst(maze, visited, delay) {
 
 function solveMazeBacktracking(maze, visited, delay) {
   var start = maze.findStart();
-  var open = [start];
+  var current = start;
 
   var backtracking = false;
   return asyncLoop(function(_, finish) {
-    if (!open.length) {
-      throw new Error("Exhausted search.");
-    }
-
-    var current = open.splice(0, 1)[0];
-    if (visited.has(current.id)) {
-      return;
-    }
-    visited.add(current.id);
-
-    current.markVisited().markSolution();
-
-    if (current.isFinish()) {
-      return finish();
-    }
-
-    var openAdjacents = maze.openAdjacents(current);
-    var unvisitedAdjacents = openAdjacents.filter(function(adj) {
-      return !visited.has(adj.id);
-    });
-    if (unvisitedAdjacents.length) {
-      backtracking = false;
-
-      Array.prototype.unshift.apply(open, unvisitedAdjacents);
-    }
-    if (backtracking || !unvisitedAdjacents.length) {
-      backtracking = true;
-
-      var visitedAdjacents = openAdjacents.filter(function(adj) {
-        return visited.has(adj.id);
-      });
-      if (!visitedAdjacents) {
-        throw new Error("For some reason there was no where to go back to after we just came from somewhere...");
-      }
-      open.unshift(visitedAdjacents[0]);
-    }
-
+    // go back until there are unvisited adjacents
     if (backtracking) {
+      var openAdjacents = maze.openAdjacents(current);
+      var unvisitedAdjacents = openAdjacents.filter(function(adj) {
+        return !visited.has(adj.id);
+      });
+
+      if (unvisitedAdjacents.length) {
+        backtracking = false;
+        return;
+      }
       current.unmarkSolution();
+
+      // go back along the current assumed solution
+      var solutionAdjacents = openAdjacents.filter(function(adj) {
+        return adj.isMarkedSolution();
+      });
+
+      if (solutionAdjacents.length !== 1) {
+        // since the solution cannot branch in more than one direction,
+        // something must have gone wrong
+        throw new Error("Backtracked all the way, could not find any solution (or an invariant was violated)");
+      }
+
+      current = solutionAdjacents[0];
+    }
+    // normal search around current unvisited adjacents
+    else {
+      current.markVisited().markSolution();
+      visited.add(current.id);
+
+      if (current.isFinish()) {
+        return finish();
+      }
+      
+      var openAdjacents = maze.openAdjacents(current);
+      var unvisitedAdjacents = openAdjacents.filter(function(adj) {
+        return !visited.has(adj.id);
+      });
+
+      if (!unvisitedAdjacents.length) {
+        backtracking = true;
+        current.unmarkSolution();
+      }
+      else {
+        current = randomArrayItem(unvisitedAdjacents);
+      }
     }
   }, null, delay);
 }

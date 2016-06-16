@@ -31,6 +31,21 @@ Maze.prototype.get = function(row, col) {
 };
 
 /**
+ * Returns the cell with the given ID
+ * Returns undefined if the indexes are out of range
+ */
+Maze.prototype.getById = function(id) {
+  for (var i = 0; i < maze.rows(); i++) {
+    for (var j = 0; j < maze.cols(); j++) {
+      var cell = maze.get(i, j);
+      if (cell.id === id) {
+        return cell;
+      }
+    }
+  }
+};
+
+/**
  * Returns whether a cell is on an edge
  */
 Maze.prototype.isEdge = function(cell) {

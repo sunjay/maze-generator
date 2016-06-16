@@ -3,7 +3,11 @@
  */
 
 function randomArrayItem(array) {
-  var index = Math.floor(array.length * Math.random());
+  var index = randomArrayIndex(array);
   return array[index];
+}
+
+function randomArrayIndex(array) {
+  return Math.floor(array.length * Math.random());
 }
 
