@@ -8,8 +8,7 @@ function generatePaths(maze) {
 
   var start = maze.randomEdge().setStart();
 
-  var visited = new Set();
-  return generateMazeTree(maze, start, visited, delay).then(function() {
+  return generateMazeTree(maze, start, delay).then(function() {
     return pickFinish(maze, start, delay);
   });
 }
@@ -17,9 +16,10 @@ function generatePaths(maze) {
 /**
  * Generates a large tree of paths through the maze
  */
-function generateMazeTree(maze, start, visited, delay) {
+function generateMazeTree(maze, start, delay) {
   var mazeSize = maze.rows() * maze.cols();
 
+  var visited = new Set();
   var current = start;
   var lastVisited = null;
 
@@ -68,8 +68,12 @@ function generateMazeTree(maze, start, visited, delay) {
  * Finds a good path and marks that as the finish
  */
 function pickFinish(maze, start, delay) {
-  return asyncLoop(function(_, finish) {
-    return finish();
-  }, null, delay);
+  //TODO: Make this more complicated and pick an edge node with a reasonable
+  //TODO: path length and distance from start
+
+  maze.randomEdge(start).setFinish();
+  //return asyncLoop(function(_, finish) {
+  //  return finish();
+  //}, null, delay);
 }
 
