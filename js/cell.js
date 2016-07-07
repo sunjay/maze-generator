@@ -164,3 +164,10 @@ Cell.prototype.isOpenTo = function(other) {
   return this.isOpen(direction);
 };
 
+/**
+ * Returns the square of the distance from this cell to the other cell
+ */
+Cell.prototype.squaredDistanceTo = function(other) {
+  return Math.pow(this.row - other.row, 2) + Math.pow(this.col - other.col, 2)
+};
+
